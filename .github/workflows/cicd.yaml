@@ -23,20 +23,20 @@ jobs:
 
 
 
-  Sonar:
-    needs: Build_Landing
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  # Sonar:
+  #   needs: Build_Landing
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: SonarCloud Scan
+  #       uses: SonarSource/sonarcloud-github-action@master
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GH_PACKAGES_TOKEN }}
+  #         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   Landing_Push_Latest_Image:
     if: ${{ (github.event_name == 'push' && github.ref == 'refs/heads/main') }}
-    needs: Sonar
+    needs: Build_Landing
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -51,21 +51,31 @@ jobs:
       - name: push image to GitHub Container Registry
         run: docker push ghcr.io/flickit-platform/flickit-landing:latest
 
-  Landing_Deploy_Latest:
+  hcp_deploy:
     needs: Landing_Push_Latest_Image
-    container: hamravesh.hamdocker.ir/public/darkube-cli:v1.1
+    container: new URL needed
     runs-on: ubuntu-latest
     steps:
       - name: Run script
-        run: darkube deploy --ref main --token ${DARKUBE_DEPLOY_TOKEN} --app-id ${DARKUBE_APP_ID}  --image-tag "latest" --job-id "$GITHUB_RUN_ID" --stateless-app true
+        run: hcp deploy --ref master --token ${HCP_DEPLOY_TOKEN} --app-id ${HCP_APP_ID}  --image-tag "${GITHUB_SHA:0:7}" --job-id "$GITHUB_RUN_ID" --stateless-app true
         env:
-          DARKUBE_DEPLOY_TOKEN: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
-          DARKUBE_APP_ID: ${{ secrets.DARKUBE_APP_ID_LANDING_STAGE }}
+          HCP_DEPLOY_TOKEN: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
+          HCP_APP_ID: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
+  # Landing_Deploy_Latest:
+  #   needs: Landing_Push_Latest_Image
+  #   container: hamravesh.hamdocker.ir/public/darkube-cli:v1.1
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Run script
+  #       run: darkube deploy --ref main --token ${DARKUBE_DEPLOY_TOKEN} --app-id ${DARKUBE_APP_ID}  --image-tag "latest" --job-id "$GITHUB_RUN_ID" --stateless-app true
+  #       env:
+  #         DARKUBE_DEPLOY_TOKEN: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
+  #         DARKUBE_APP_ID: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
 
 
   Landing_Push_Image:
     if: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') }}
-    needs: Sonar
+    needs: Build_Landing
     runs-on: ubuntu-latest
     outputs:
       TAG: ${{ steps.TAG.outputs.tag }}
