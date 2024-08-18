@@ -7,3 +7,4 @@ CMD npm start
 COPY env.sh /docker-entrypoint.d/env.sh
 RUN chmod +x /docker-entrypoint.d/env.sh
 EXPOSE 3000
+ 
