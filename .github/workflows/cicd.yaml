@@ -53,7 +53,7 @@ jobs:
 
   hcp_deploy:
     needs: Build_Landing
-    container: new URL needed
+    container: Newurl needed
     runs-on: ubuntu-latest
     steps:
       - name: Run script
