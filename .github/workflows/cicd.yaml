@@ -51,26 +51,29 @@ jobs:
   #     - name: push image to GitHub Container Registry
   #       run: docker push ghcr.io/flickit-platform/flickit-landing:latest
 
-  hcp_deploy:
-    needs: Build_Landing
-    container: Newurl needed
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run script
-        run: hcp deploy --ref master --token ${HCP_DEPLOY_TOKEN} --app-id ${HCP_APP_ID}  --image-tag "latest" --job-id "$GITHUB_RUN_ID" --stateless-app true
-        env:
-          HCP_DEPLOY_TOKEN: "test"
-          HCP_APP_ID: "test"
-  # Landing_Deploy_Latest:
-  #   needs: Landing_Push_Latest_Image
-  #   container: hamravesh.hamdocker.ir/public/darkube-cli:v1.1
+  # hcp_deploy:
+  #   needs: Build_Landing
+  #   container: Newurl needed
   #   runs-on: ubuntu-latest
   #   steps:
   #     - name: Run script
-  #       run: darkube deploy --ref main --token ${DARKUBE_DEPLOY_TOKEN} --app-id ${DARKUBE_APP_ID}  --image-tag "latest" --job-id "$GITHUB_RUN_ID" --stateless-app true
+  #       run: hcp deploy --ref master --token ${HCP_DEPLOY_TOKEN} --app-id ${HCP_APP_ID}  --image-tag "latest" --job-id "$GITHUB_RUN_ID" --stateless-app true
   #       env:
-  #         DARKUBE_DEPLOY_TOKEN: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
-  #         DARKUBE_APP_ID: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
+  #         HCP_DEPLOY_TOKEN: "test"
+  #         HCP_APP_ID: "test"
+  Landing_Deploy_Latest:
+    needs: Build_Landing
+    container: 
+      image: registry.hectora.cloud/hectora-public/darkube-cli:v1.1
+      env:
+        CONSOLE_API_BASE_URL: "https://api.hectora.cloud"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run script
+        run: darkube deploy --ref main --token ${DARKUBE_DEPLOY_TOKEN} --app-id ${DARKUBE_APP_ID}  --image-tag "latest" --job-id "$GITHUB_RUN_ID" --stateless-app true
+        env:
+          DARKUBE_DEPLOY_TOKEN: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
+          DARKUBE_APP_ID: ${{ secrets.DARKUBE_DEPLOY_TOKEN_LANDING_STAGE }}
 
 
   Landing_Push_Image:
